@@ -1,0 +1,17 @@
+services:
+  api:
+    build: .
+    command: air
+    volumes:
+      - .:/app
+    working_dir: /app
+    ports:
+      - "760:760"
+
+  meilisearch:
+    image: getmeili/meilisearch:v1.16
+    ports:
+      - "7700:7700"
+    volumes:
+      - ./meili_data:/meili_data
+
