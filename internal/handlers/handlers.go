@@ -8,13 +8,6 @@ import (
 	"github.com/meilisearch/meilisearch-go"
 )
 
-type Post struct {
-	Id          string   `json:"id"`
-	Title       string   `json:"title"`
-	Tags        []string `json:"tags"`
-	Description string   `json:"description"`
-	Content     string   `json:"content"`
-}
 
 type Handlers struct {
 	Config       *config.Config

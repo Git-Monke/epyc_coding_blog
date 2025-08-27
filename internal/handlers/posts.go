@@ -2,26 +2,30 @@ package handlers
 
 import (
 	"github.com/gofiber/fiber/v3"
+	"github.com/google/uuid"
 	"github.com/meilisearch/meilisearch-go"
 	"net/http"
-	"github.com/google/uuid"
 )
+
+type Post struct {
+	Id          string   `json:"id"`
+	Title       string   `json:"title"`
+	Tags        []string `json:"tags"`
+	Description string   `json:"description"`
+	Content     string   `json:"content"`
+}
 
 func (h *Handlers) GetPost(c fiber.Ctx) error {
 	postId := c.Params("postId")
-	var content string
+	var content Post
 
-	err := h.SearchClient.Index("posts").GetDocument(postId, &meilisearch.DocumentQuery{
-		Fields: []string{"content"},
-	}, content)
+	err := h.SearchClient.Index("posts").GetDocument(postId, &meilisearch.DocumentQuery{}, &content)
 
 	if err != nil {
 		return nestErr(c, http.StatusNotFound, "Failed to find document: %w", err)
 	}
 
-	return c.JSON(fiber.Map{
-		content: content,
-	})
+	return c.JSON(content)
 }
 
 // ---
@@ -62,4 +66,3 @@ func (h *Handlers) PostPost(c fiber.Ctx) error {
 
 	return c.JSON(fiber.Map{"taskId": task.TaskUID, "postId": post.Id})
 }
-

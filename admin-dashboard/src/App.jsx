@@ -1,34 +1,64 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
+import { useState, useRef } from 'react'
 import './App.css'
+import PostsList from './components/PostsList'
+import PostEditor from './components/PostEditor'
+import BackendConfig from './components/BackendConfig'
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [currentPage, setCurrentPage] = useState('posts-list')
+  const [selectedPost, setSelectedPost] = useState(null)
+  const postsListRef = useRef()
+
+  const navigateToEditor = (post = null) => {
+    setSelectedPost(post)
+    setCurrentPage('post-editor')
+  }
+
+  const navigateToPostsList = () => {
+    setSelectedPost(null)
+    setCurrentPage('posts-list')
+    // Refresh drafts when returning from editor with safety checks
+    setTimeout(() => {
+      try {
+        if (postsListRef.current?.refreshDrafts) {
+          postsListRef.current.refreshDrafts()
+        }
+      } catch (error) {
+        console.error('Failed to refresh drafts:', error)
+      }
+    }, 100) // Increased delay to ensure PostsList is fully mounted and ready
+  }
+
+  const renderCurrentPage = () => {
+    switch (currentPage) {
+      case 'posts-list':
+        return <PostsList ref={postsListRef} onNewPost={() => navigateToEditor()} onEditPost={navigateToEditor} />
+      case 'post-editor':
+        return <PostEditor post={selectedPost} onBack={navigateToPostsList} />
+      default:
+        return <PostsList ref={postsListRef} onNewPost={() => navigateToEditor()} onEditPost={navigateToEditor} />
+    }
+  }
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+    <div className="app">
+      <nav className="navbar">
+        <h1>Blog Admin</h1>
+        <div className="nav-links">
+          <button 
+            className={currentPage === 'posts-list' ? 'active' : ''}
+            onClick={() => setCurrentPage('posts-list')}
+          >
+            Posts
+          </button>
+          <BackendConfig />
+        </div>
+      </nav>
+      
+      <main className="main-content">
+        {renderCurrentPage()}
+      </main>
+    </div>
   )
 }
 
